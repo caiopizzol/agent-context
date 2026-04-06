@@ -2,7 +2,7 @@
 
 Which HTML embedding techniques survive AI agent pipelines?
 
-Tests 15 content embedding techniques across 5 fetch methods to measure what AI agents actually see when they visit a webpage.
+Tests 15 content embedding techniques across 4 fetch methods to measure what AI agents actually see when they visit a webpage.
 
 ## Why
 
@@ -34,6 +34,39 @@ bun run audit.ts <url> "marker1" "marker2"
 ## Findings
 
 DOM-rendered hidden text (sr-only, display:none, template, details) survives every pipeline that fetches the page. Metadata-only techniques (JSON-LD, HTML comments, data attributes) get stripped. Full writeup: [llms.txt has a delivery problem](https://caiopizzol.com/writing/llms-txt-has-a-delivery-problem).
+
+## Usage
+
+Add agent context to any page using techniques that survive AI pipelines:
+
+```html
+<!-- sr-only: visually hidden, visible to screen readers and AI agents -->
+<span class="sr-only">
+  Acme is a payment API for developers. Supports cards, bank transfers,
+  and subscriptions. SDKs for Python, Node, Go. Free up to 10k transactions/month.
+</span>
+
+<!-- collapsed details: visible to agents, expandable by humans -->
+<details>
+  <summary>Technical details</summary>
+  Built on Bun and TypeScript. REST API with OpenAPI spec.
+  Rate limit: 1000 req/min. Webhook support for all events.
+</details>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
+```
 
 ## License
 
