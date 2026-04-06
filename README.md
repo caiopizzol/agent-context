@@ -29,7 +29,6 @@ bun run audit.ts <url> "marker1" "marker2"
 | Raw fetch | Plain HTTP request |
 | OpenAI web search | GPT-4.1-mini + web_search tool |
 | Anthropic web fetch | Claude Haiku + web_fetch tool |
-| Anthropic web search | Claude Haiku + web_search tool |
 
 ## Findings
 

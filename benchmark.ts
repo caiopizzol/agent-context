@@ -203,77 +203,6 @@ async function fetchOpenAIWebSearch(url: string): Promise<FetchResult> {
 	}
 }
 
-async function fetchAnthropicWebSearch(url: string): Promise<FetchResult> {
-	const apiKey = process.env.ANTHROPIC_API_KEY;
-	if (!apiKey)
-		return {
-			method: "Anthropic Web Search",
-			content: "",
-			detected: emptyDetection(),
-			error: "ANTHROPIC_API_KEY not set",
-		};
-
-	try {
-		const res = await fetch("https://api.anthropic.com/v1/messages", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"x-api-key": apiKey,
-				"anthropic-version": "2023-06-01",
-			},
-			body: JSON.stringify({
-				model: "claude-haiku-4-5",
-				max_tokens: 4096,
-				tools: [
-					{
-						type: "web_search_20250305",
-						name: "web_search",
-						max_uses: 5,
-					},
-				],
-				messages: [
-					{
-						role: "user",
-						content: CANARY_PROMPT(url),
-					},
-				],
-			}),
-		});
-
-		const data = await res.json();
-
-		if (data.error) {
-			return {
-				method: "Anthropic Web Search",
-				content: "",
-				detected: emptyDetection(),
-				rawResponse: data,
-				error: data.error.message,
-			};
-		}
-
-		const text =
-			data.content
-				?.filter((c: { type: string }) => c.type === "text")
-				.map((c: { text?: string }) => c.text || "")
-				.join("\n") || "";
-
-		return {
-			method: "Anthropic Web Search",
-			content: text,
-			detected: detect(text),
-			rawResponse: data,
-		};
-	} catch (e) {
-		return {
-			method: "Anthropic Web Search",
-			content: "",
-			detected: emptyDetection(),
-			error: String(e),
-		};
-	}
-}
-
 async function fetchAnthropicWebFetch(url: string): Promise<FetchResult> {
 	const apiKey = process.env.ANTHROPIC_API_KEY;
 	if (!apiKey)
@@ -471,7 +400,6 @@ console.log("Running fetchers in parallel...\n");
 const results = await Promise.all([
 	fetchRawHTML(url),
 	fetchOpenAIWebSearch(url),
-	fetchAnthropicWebSearch(url),
 	fetchAnthropicWebFetch(url),
 ]);
 
