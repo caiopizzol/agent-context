@@ -33,25 +33,37 @@ bun run audit.ts <url> "marker1" "marker2"
 
 ## Findings
 
-DOM-rendered hidden text (sr-only, display:none, template, details) survives every pipeline that fetches the page. Metadata-only techniques (JSON-LD, HTML comments, data attributes) get stripped. Full writeup: [llms.txt has a delivery problem](https://caiopizzol.com/writing/llms-txt-has-a-delivery-problem).
+Five DOM-rendered techniques survive every pipeline that fetches the page: sr-only, display:none, details, template, noscript. Metadata-only techniques (JSON-LD, HTML comments, data attributes) get stripped.
+
+Not all survivors are equal. Based on the [HTML spec](https://html.spec.whatwg.org/), accessibility behavior, and search engine treatment:
+
+| Technique | Screen readers | Google-safe | Semantic fit |
+|---|---|---|---|
+| `<details>` | ✓ | ✓ indexed as progressive disclosure | ✓ "additional information" |
+| sr-only (CSS) | ✓ | ⚠ fine for small text, risky if large | ⚠ accessibility convention |
+| `<noscript>` | – | ⚠ cloaking risk | ✗ no-JS fallback |
+| `<template>` | – | neutral | ✗ JS templating |
+| `display:none` | – | ✗ cloaking signal | ✗ removed from a11y tree |
+
+Full writeup: [llms.txt has a delivery problem](https://caiopizzol.com/writing/llms-txt-has-a-delivery-problem).
 
 ## Usage
 
-Add agent context to any page using techniques that survive AI pipelines:
+Use `<details>` for structured context (indexed by Google, expandable by humans) and sr-only for short descriptions (accessible, invisible):
 
 ```html
-<!-- sr-only: visually hidden, visible to screen readers and AI agents -->
-<span class="sr-only">
+<!-- details: indexed by Google, expandable by humans, read by agents -->
+<details>
+  <summary>About this product</summary>
   Acme is a payment API for developers. Supports cards, bank transfers,
   and subscriptions. SDKs for Python, Node, Go. Free up to 10k transactions/month.
-</span>
-
-<!-- collapsed details: visible to agents, expandable by humans -->
-<details>
-  <summary>Technical details</summary>
-  Built on Bun and TypeScript. REST API with OpenAPI spec.
-  Rate limit: 1000 req/min. Webhook support for all events.
+  REST API with OpenAPI spec. Rate limit: 1000 req/min.
 </details>
+
+<!-- sr-only: visually hidden, accessible to screen readers and agents -->
+<span class="sr-only">
+  Acme: payment API for developers. Cards, bank transfers, subscriptions.
+</span>
 
 <style>
   .sr-only {
